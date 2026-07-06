@@ -1,0 +1,31 @@
+name: Daily Secondary Market Update
+
+on:
+  schedule:
+    # Runs at 05:15 UTC = 09:15 Gulf Standard Time (UAE), every day.
+    # Staggered 15 min after the off-plan update so the two Telegram
+    # messages don't arrive at exactly the same time.
+    - cron: "15 5 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  send-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run secondary market update script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python daily_update_secondary.py
